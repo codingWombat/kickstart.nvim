@@ -592,10 +592,10 @@ local cfg = require("yaml-companion").setup({
         trace = { server = "debug" },
       },
     },
-  --   cmd = {"yaml-language-server"}
+    cmd = {"yaml-language-server","--stdio"}
   },
 })
-require("lspconfig")["yamlls"].setup(cfg)
+require("lspconfig").yamlls.setup(cfg)
 require("yaml-companion").open_ui_select()
 
 local function get_schema()
