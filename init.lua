@@ -227,7 +227,7 @@ require('lazy').setup({
   --    Uncomment the following line and add your plugins to `lua/custom/plugins/*.lua` to get going.
   --
   --    For additional information see: https://github.com/folke/lazy.nvim#-structuring-your-plugins
-  -- { import = 'custom.plugins' },
+  { import = 'custom.plugins' },
 }, {})
 
 -- [[ Setting options ]]
@@ -559,6 +559,25 @@ cmp.setup {
     { name = 'luasnip' },
   },
 }
+
+--#region yaml companion
+
+local cfg = require("yaml-companion").setup({
+  -- Add any options here, or leave empty to use the default settings
+  -- lspconfig = {
+  --   cmd = {"yaml-language-server"}
+  -- },
+})
+require("lspconfig")["yamlls"].setup(cfg)
+require("yaml-companion").open_ui_select()
+
+local function get_schema()
+  local schema = require("yaml-companion").get_buf_schema(0)
+  if schema.result[1].name == "none" then
+    return ""
+  end
+  return schema.result[1].name
+end
 
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et
