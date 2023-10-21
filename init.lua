@@ -227,7 +227,7 @@ require('lazy').setup({
   --    Uncomment the following line and add your plugins to `lua/custom/plugins/*.lua` to get going.
   --
   --    For additional information see: https://github.com/folke/lazy.nvim#-structuring-your-plugins
-  -- { import = 'custom.plugins' },
+  { import = 'custom.plugins' },
 }, {})
 
 -- [[ Setting options ]]
@@ -329,11 +329,9 @@ vim.keymap.set('n', '<leader>sr', require('telescope.builtin').resume, { desc = 
 
 -- [[ Configure Treesitter ]]
 -- See `:help nvim-treesitter`
--- Defer Treesitter setup after first render to improve startup time of 'nvim {filename}'
-vim.defer_fn(function()
-  require('nvim-treesitter.configs').setup {
-    -- Add languages to be installed here that you want installed for treesitter
-    ensure_installed = { 'c', 'cpp', 'go', 'lua', 'python', 'rust', 'tsx', 'javascript', 'typescript', 'vimdoc', 'vim', 'bash' },
+require('nvim-treesitter.configs').setup {
+  -- Add languages to be installed here that you want installed for treesitter
+  ensure_installed = { 'c', 'cpp', 'go', 'lua', 'python', 'rust', 'tsx', 'typescript', 'vimdoc', 'vim', 'yaml', 'c_sharp', 'java', 'json' },
 
     -- Autoinstall languages that are not installed. Defaults to false (but you can change for yourself!)
     auto_install = false,
@@ -394,7 +392,6 @@ vim.defer_fn(function()
       },
     },
   }
-end, 0)
 
 -- Diagnostic keymaps
 vim.keymap.set('n', '[d', vim.diagnostic.goto_prev, { desc = 'Go to previous diagnostic message' })
@@ -472,13 +469,11 @@ require('mason-lspconfig').setup()
 --  If you want to override the default filetypes that your language server will attach to you can
 --  define the property 'filetypes' to the map in question.
 local servers = {
-  -- clangd = {},
-  -- gopls = {},
-  -- pyright = {},
+  clangd = {},
+  yamlls = {},
   -- rust_analyzer = {},
   -- tsserver = {},
   -- html = { filetypes = { 'html', 'twig', 'hbs'} },
-
   lua_ls = {
     Lua = {
       workspace = { checkThirdParty = false },
@@ -559,6 +554,56 @@ cmp.setup {
     { name = 'luasnip' },
   },
 }
+
+--#region yaml companion
+
+local cfg = require("yaml-companion").setup({
+  builtin_matchers = {
+    -- Detects Kubernetes files based on content
+    kubernetes = { enabled = true },
+    cloud_init = { enabled = true }
+  },
+
+  -- Additional schemas available in Telescope picker
+  schemas = {
+    {
+      name = "Kubernetes 1.22.4",
+      uri = "https://raw.githubusercontent.com/yannh/kubernetes-json-schema/master/v1.22.4-standalone-strict/all.json",
+    },
+  },
+  -- Add any options here, or leave empty to use the default settings
+  lspconfig = {
+    flags = {
+      debounce_text_changes = 150,
+    },
+    settings = {
+      redhat = { telemetry = { enabled = false } },
+      yaml = {
+        validate = true,
+        format = { enable = true },
+        hover = true,
+        schemaStore = {
+          enable = true,
+          url = "https://www.schemastore.org/api/json/catalog.json",
+        },
+        schemaDownload = { enable = true },
+        schemas = {},
+        trace = { server = "debug" },
+      },
+    },
+    cmd = {"yaml-language-server","--stdio"}
+  },
+})
+require("lspconfig").yamlls.setup(cfg)
+require("yaml-companion").open_ui_select()
+
+local function get_schema()
+  local schema = require("yaml-companion").get_buf_schema(0)
+  if schema.result[1].name == "none" then
+    return ""
+  end
+  return schema.result[1].name
+end
 
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et
