@@ -392,7 +392,6 @@ require('nvim-treesitter.configs').setup {
       },
     },
   }
-end, 0)
 
 -- Diagnostic keymaps
 vim.keymap.set('n', '[d', vim.diagnostic.goto_prev, { desc = 'Go to previous diagnostic message' })
